@@ -1,0 +1,29 @@
+		ORG		$8000		*ZONA CODICE
+START		CLR		D0		*Setto a 0 D0
+		CLR		D1		*Setto a 0 D1
+		CLR		D2		*Setto a 0 D2
+		CLR		D3		*Setto a 0 D3
+		CLR		D4		*Setto a 0 D4
+		MOVE.W	VET,D0		*Prelevo il mio operando di interesse dalla memoria
+		MOVE.W	#1,D1		*Inizializzo il primo valore della maschera
+		MOVE.W	N,D2		*Inizializzo la "variabile" di conteggio
+LOOP		TST.W		D2		*Testo il registro D2, in modo da apportare i cambiamenti all'interno dello SR
+		BEQ		SKIP		*Nel caso in cui D2 sia uguale a 0 esco dal ciclo
+		MOVE.W	D1,D4		*Salvo il valore di D1 in D4, in modo che se con l'operazione di AND si cancelli la maschera essa sia salvata
+		AND.W		D0,D1		*Eseguo l'operazione di AND
+		BEQ		NONE		*Se e' 0 non la conto, saltando l'operazione ADDQ
+		ADDQ.W	#1,D3		*Sommo 1 nel caso la somma uscisse diversa da 0
+NONE		MOVE.W	D4,D1		*Sposto il valore della maschera salvata in D1
+		ASL.W		#1,D1		*Eseguo lo shift a sinistra per spostare l'interesse sul bit di dopo
+		SUBQ.W	#1,D2		*Sottraggo 1 a D2, classico decremento dei cicli FOR
+		BRA		LOOP		*Salto incondizionato all'inizio del LOOP
+SKIP		MOVE.W	D3,RIS		*Quando ho finito di ciclare vado a salvare il valore calcolato in memoria
+FINE		JMP		FINE		*Esecuzione infinita di tale comando. Utile in ASIM quando si esegue con l'esecutore veloce
+		ORG		$8100		*ZONA DATI
+VET		DC.W		$FF		*Valore in esadecimale da "controllare"
+N		DC.W		$16		*Numero di elementi (bit) da controllare
+RIS		DS.W		1		*Numero di locazioni da conservare per la conservazione del risultato in memoria
+		END		START		*Fine del programma
+
+
+
