@@ -1,0 +1,51 @@
+		ORG		$9000
+CRA		EQU		$2005
+PRA		EQU		$2004
+MSGD		EQU		4	* Numero di caratteri per messaggio
+N		EQU 		2	* Numero di messaggi che si aspettano
+DATA		DS.B		8	* Locazioni in cui memorizzare i dati dei 2 messaggi
+IND		DC.L		$00009000	* Locazione per conservare l'ultima locazione riempita
+MSG_TOT	DC.W		0
+MSG_CH	DC.W		0
+
+		ORG		$8000
+MAIN		JSR		DVBIN	* Subroutine di configurazione della PIA
+		MOVE.W	SR,D0
+		ANDI.W	#$F8FF,D0	* Mascheramento per attivazione delle interruzioni
+		MOVE.W	D0,SR	* Abilitazione delle interruzioni
+LOOP		JMP		LOOP
+
+DVBIN		MOVE.B	#$00,CRA
+		MOVE.B	#$00,PRA
+		MOVE.B	#%00100101,CRA
+		RTS
+
+		ORG		$8700
+RCV		MOVE.L	A0,-(SP)
+		MOVE.L	D0,-(SP)
+		MOVE.L	D1,-(SP)
+		MOVEA.L	IND,A0
+		MOVE.W	MSG_TOT,D0
+		MOVE.W	MSG_CH,D1
+		CMP.W	#N,D0
+		BGE		EXIT
+		ADDQ.W	#1,D1
+		CMP.W	#MSGD,D1
+		BNE		SKIP
+		ADDQ.W	#1,D0
+		MOVE.W	#0,D1
+SKIP		MOVE.B	PRA,(A0)
+		ADDQ.L	#1,A0
+EXIT		MOVE.L	A0,IND
+		MOVE.W	D0,MSG_TOT
+		MOVE.W	D1,MSG_CH
+		MOVE.L	(SP)+,D1
+		MOVE.L	(SP)+,D0
+		MOVE.L	(SP)+,A0
+		RTE
+		END		MAIN	
+
+		
+
+
+

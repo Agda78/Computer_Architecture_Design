@@ -1,0 +1,36 @@
+		ORG		$8200
+DRB		EQU		$2004
+CRB		EQU		$2005
+
+MAIN		JSR		DVIN
+		MOVE.L	#DATA,IND
+		ANDI.W	#$D8FF,D0 ;maschera per reg stato (stato utente, int abilitati)
+		MOVE.W	D0,SR	;pone liv int a 000
+
+LOOP		JMP		LOOP		*Ciclo di attesa finale
+
+DVIN		MOVE.B	#$00,CRB
+		MOVE.B	#$00,DRB
+		MOVE.B	#%00100101,CRB
+		RTS
+		
+* SCRITTURA DELLA ISR DI GESTIONE DELLA PIA
+		ORG		$8700
+RCV		MOVE.L	A0,-(SP)
+		MOVE.L	D0,-(SP)
+		MOVE.L	IND,A0
+		MOVE.B	DRB,D0	*FASE DI LETTURA DALLA PIA
+		MOVE.B	D0,(A0)
+		ADDA.L	#1,A0
+		MOVE.L	A0,IND
+		MOVE.L	(SP)+,D0
+		MOVE.L	(SP)+,A0
+		RTE		
+
+		ORG		$9000
+DATA		DS.B		6
+IND		DS.L		1
+		END		MAIN
+
+
+

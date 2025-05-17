@@ -1,0 +1,33 @@
+* Area dati
+		ORG		$8000
+MSG		DC.B		1,2,3,4,5,6	*Messaggio da inviare
+DIM		DC.B		6		*Grandezza del messaggio
+
+* Area Istruzioni
+
+		ORG		$8200
+PIADB		EQU		$2006		*Tali indirizzi sono mappati all'interno del file di configurazione (address1, address2)
+PIACB		EQU		$2007
+
+MAIN		JSR		DVBOUT
+		MOVEA.L	#PIACB,A1
+		MOVEA.L	#PIADB,A2
+		MOVEA.L	#MSG,A0
+		MOVE.B	DIM,D0
+		CLR		D1
+		CLR		D2
+INVIO		MOVE.B	(A2),D1
+		MOVE.B	(A0)+,(A2)
+		ADD.B		#1,D2
+CICLO2	MOVE.B	#1,D2
+		ANDI.B		#$80,D1
+		BEQ		CICLO2
+		CMP		D2,D0
+		BNE		INVIO
+LOOP		JMP		LOOP
+
+DVBOUT	MOVE.B	#0,PIACB
+		MOVE.B	#$FF,PIADB
+		MOVE.B	#%00100100,PIACB
+		RTS
+		END		MAIN
